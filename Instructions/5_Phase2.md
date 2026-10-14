@@ -1,34 +1,101 @@
-#### We have
+# Phase 2 — Choose the Clinical Embedder and Fill Vectors
 
-- Database with vector extions
-- WE have data but clinical_embedding vector columns is empty
+Goal: understand why we pick a medical embedding model, then start filling `clinical_embedding`.
 
-#### Doctor's comment
+---
 
-- convert into embedding and store into our column
+## What we have after Phase 1
 
-- **Amazing thing about pg_vector is that we can do semantic search(cosine similarity) directly in postgresql with some operators**
+- Database with `pgvector` enabled
+- Patient rows already loaded
+- Column `clinical_embedding` exists, but most values are still empty (`NULL`)
 
+---
 
-#### Choosing Embedder.
+## What we need to do
 
-- based upon data we choose embedder.
-- what is special thing about our data?
-- WE cannot choose a general embedder(transformer) because
+Take clinical text (admission type, drug, lab test, diagnosis, notes, etc.),  
+convert it into a **768-number vector**,  
+and save that vector into `clinical_embedding`.
 
-1. Medicines
-2. Drugs
-3. disease
+Why? So later we can do **semantic search** (meaning-based search) with pgvector operators such as cosine similarity, directly inside PostgreSQL.
 
-- does any general LLM(Transformer) have the super understanding of all above?
-- NO. that's why we can't choose any LLM.
+---
 
-#### NeuM/Bioclinical text LLM/Transformer
+## Choosing the embedder
 
-- WE selected above llm. downloaded lcoallhy throguh scripts/04_generate_embedding.py file
+We should not pick a random general-purpose model.
 
-- In batches and limit(demo_limit) it update the embedding vector column where it is null.
+Our data is clinical:
 
-- 10 or 12 thousands embeddings are fine. As local modal is taking lot of time.
+1. medicines / drugs
+2. diseases / diagnoses
+3. labs and hospital notes
 
-- Run the script to save few thousands embeddings. 
+A normal general text model may not understand medical wording well enough.
+
+So we use a biomedical / clinical embedding model:
+
+**`NeuML/bioclinical-modernbert-base-embeddings`**
+
+Notes:
+
+- This is an **embedding model** (turns text into vectors)
+- It is **not** a chat LLM that answers questions
+- Output size must be **768** to match `vector(768)`
+
+---
+
+## Script that does the real work
+
+File: `scripts/04_generate_embeddings.py`
+
+What it does:
+
+1. Connects to AWS PostgreSQL using `.env`
+2. Loads the BioClinical model (downloads once, then uses local Hugging Face cache)
+3. Selects rows where `clinical_embedding IS NULL`
+4. Builds one clinical text string per row
+5. Encodes rows in batches
+6. Updates `clinical_embedding` in the database
+
+Important settings in the script:
+
+- `batch_size` = how many rows encode/update together
+- `demo_limit` = max rows to process in one run
+
+You do **not** need to fill every row on day one.  
+A few thousand embeddings is enough for demos.
+
+---
+
+## Helpful dry-run file (no database writes)
+
+File: `scripts/04_embedder_playground.py`
+
+Use this to learn:
+
+- how the model loads
+- how text is built
+- how encoding works
+
+It uses sample rows only. It does **not** write to the database.
+
+---
+
+## Practical tip
+
+First model load is slow (download / cache / load into memory).  
+Later runs are faster because the model is already cached on disk.
+
+If CUDA GPU is available and PyTorch is the CUDA build, encoding can use GPU.  
+Tokenization and DB updates still use CPU, so Task Manager may still show CPU activity.
+
+---
+
+## Phase 2 checklist
+
+- [ ] You understand why a clinical embedder is needed
+- [ ] Model name is `NeuML/bioclinical-modernbert-base-embeddings`
+- [ ] Column size and model size both are 768
+- [ ] You tried playground and/or started `04_generate_embeddings.py`
