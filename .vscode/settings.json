@@ -1,0 +1,9 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "pylint.enabled": true,
+    "cursorpyright.analysis.diagnosticMode": "openFilesOnly",
+    "cursorpyright.analysis.useLibraryCodeForTypes": false,
+    "cursorpyright.analysis.disableWorkspaceSymbol": true,
+    "cursorpyright.nodeMaxOldSpaceSize": 1024
+}

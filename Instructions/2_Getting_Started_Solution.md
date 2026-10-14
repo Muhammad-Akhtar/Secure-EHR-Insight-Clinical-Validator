@@ -118,19 +118,3 @@ A doctor submits a high-risk query: *"What medicine should I prescribe to this p
 * **Safe Query:** If the question passes safety checks (e.g., *"Summarize this patient's past allergies"*), NeMo combines the question with the redacted patient context and routes it to the LLM.
 
 ---
-
-## Technical Terminology Fixes & Corrections Summary
-
-| Original Note Term | Corrected Technical Term | Explanation |
-
-| --- | --- | --- |
-
-| `Reduction` | **Redaction** | The process of removing or obscuring sensitive text (PHI/PII) for security. |
-
-| `Microsoft precides` | **Microsoft Presidio** | Microsoft's open-source library for PII/PHI detection and anonymization. |
-
-| `nemo guardrails` | **NVIDIA NeMo Guardrails** | An open-source toolkit for adding safety and security rails to LLM applications. |
-
-| `PostgresSql` | **PostgreSQL** | Standardized casing for the relational database. |
-
-| `pg_vector` | *`pgvector`** | The official name of the vector similarity search extension for PostgreSQL. |
